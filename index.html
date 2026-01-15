@@ -1,103 +1,216 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kotobako</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <style>
-        body { font-family: 'Noto Serif JP', serif; -webkit-tap-highlight-color: transparent; }
-        .pb-safe-area { padding-bottom: env(safe-area-inset-bottom); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-        textarea::placeholder, input::placeholder { color: #d6d3d1; }
-        @keyframes floatUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        .animate-float-up { animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .animate-fade-in { animation: fadeIn 0.3s ease-out; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Kotobako</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+<script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+  body { font-family: 'Noto Serif JP', serif; -webkit-tap-highlight-color: transparent; }
+  .pb-safe-area { padding-bottom: env(safe-area-inset-bottom); }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  textarea::placeholder, input::placeholder { color: #d6d3d1; }
+  @keyframes floatUp { from { transform: translateY(100px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .animate-float-up { animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+</style>
 </head>
 <body>
-    <div id="root"></div>
-    <script type="text/babel" data-type="module">
-        // Firebase (CDN)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-        import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+<div id="root"></div>
+<script type="text/babel" data-type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+  import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+  import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        const { useState, useEffect, useRef, useCallback } = React;
-        const firebaseConfig = {"apiKey":"AIzaSyBLw99hdYwzQKaWFacV3HdIAsa_adAna9k","authDomain":"kotobako-ec686.firebaseapp.com","projectId":"kotobako-ec686","storageBucket":"kotobako-ec686.firebasestorage.app","messagingSenderId":"836620257824","appId":"1:836620257824:web:5a76bf0e646e37f1fb4a45","measurementId":"G-9XDCCZ1BDM"};
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = 'koto-no-ha-app';
-        const CATEGORIES = ["心に残った", "新たな気づき", "おもしろい", "役立ちそう"];
+  const { useState, useEffect, useRef } = React;
+  const { createRoot } = ReactDOM;
+  const firebaseConfig = {"apiKey":"AIzaSyBLw99hdYwzQKaWFacV3HdIAsa_adAna9k","authDomain":"kotobako-ec686.firebaseapp.com","projectId":"kotobako-ec686","storageBucket":"kotobako-ec686.firebasestorage.app","messagingSenderId":"836620257824","appId":"1:836620257824:web:5a76bf0e646e37f1fb4a45","measurementId":"G-9XDCCZ1BDM"};
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+  const appId = 'koto-no-ha-app';
+  const CATEGORIES = ["心に残った", "新たな気づき", "おもしろい", "役立ちそう"];
 
-        // Icons
-        const Icon = ({ name, size = 24, className = "" }) => {
-            const iRef = useRef(null);
-            useEffect(() => { if (iRef.current) lucide.createIcons({ attrs: { class: className, width: size, height: size }, nameAttr: 'data-lucide', root: iRef.current.parentNode }); });
-            return <i data-lucide={name} className={className}></i>;
+  const generateShortCode = () => {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+      let result = '';
+      for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+      result += '-';
+      for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+      return result;
+  };
+  const Icon = ({ name, size = 24, className = "" }) => {
+      const iRef = useRef(null);
+      useEffect(() => { if (iRef.current) lucide.createIcons({ attrs: { class: className, width: size, height: size }, nameAttr: 'data-lucide', root: iRef.current.parentNode }); });
+      return <i data-lucide={name} className={className}></i>;
+  };
+  const PenLine = (p) => <Icon name="pen-line" {...p} />;
+  const Sparkles = (p) => <Icon name="sparkles" {...p} />;
+  const Check = (p) => <Icon name="check" {...p} />;
+  const ChevronRight = (p) => <Icon name="chevron-right" {...p} />;
+  const ChevronLeft = (p) => <Icon name="chevron-left" {...p} />;
+  const ArrowLeft = (p) => <Icon name="arrow-left" {...p} />;
+  const Edit2 = (p) => <Icon name="edit-2" {...p} />;
+  const Trash2 = (p) => <Icon name="trash-2" {...p} />;
+  const Menu = (p) => <Icon name="menu" {...p} />;
+  const Copy = (p) => <Icon name="copy" {...p} />;
+  const RefreshCw = (p) => <Icon name="refresh-cw" {...p} />;
+  const X = (p) => <Icon name="x" {...p} />;
+  const AlertCircle = (p) => <Icon name="alert-circle" {...p} />;
+
+  const Header = ({ onTitleClick, leftActions, rightActions }) => (
+      <header className="sticky top-0 z-50 h-16 bg-stone-50/80 backdrop-blur-md border-b border-stone-200 px-6 flex items-center justify-between">
+          <div className="w-20 flex justify-start items-center">{leftActions}</div>
+          <h1 onClick={onTitleClick} className="text-xl font-serif font-bold tracking-tight text-stone-800 cursor-default select-none active:opacity-70 transition-opacity" title="アプリ本体です">Kotobako</h1>
+          <div className="w-20 flex justify-end items-center gap-1">{rightActions}</div>
+      </header>
+  );
+
+  // ... (ここに SyncSettingsView, Toast, ConfirmDialog, FloatingWriteButton, InputView, ListView, SingleQuoteView の定義をそのまま埋め込む)
+  // スペース節約のため、実際のApp.jsx内のコードと同じコンポーネント定義をここに展開したと仮定してください。
+  // 実際の実装では、ここに全コンポーネントのコードを文字列として展開します。
+
+  const SyncSettingsView = ({ currentShortCode, isLoadingCode, errorMsg, onRetryCode, onSyncCode, onRequestReset, showToast }) => {
+      const [inputId, setInputId] = useState('');
+      const handleCopy = () => { if (!currentShortCode || currentShortCode.length < 8) return; navigator.clipboard.writeText(currentShortCode); showToast("同期コードをコピーしました"); };
+      return (
+          <div className="flex flex-col h-full max-w-md mx-auto p-6 pt-6 pb-24 animate-fade-in overflow-y-auto no-scrollbar"><div className="space-y-8"><div className="space-y-3"><label className="text-stone-500 text-[10px] font-bold tracking-widest uppercase block ml-1">あなたの同期コード</label><div className="flex items-center gap-2 bg-white p-4 rounded-xl border border-stone-200 shadow-sm"><code className="flex-grow text-xl font-mono font-bold text-stone-800 tracking-tighter text-center">{isLoadingCode ? '...' : (errorMsg ? 'エラー' : currentShortCode)}</code><button onClick={handleCopy} disabled={!currentShortCode || currentShortCode.includes('...')} className="p-2 text-stone-400 hover:text-stone-800 bg-stone-50 rounded-lg active:scale-95 transition-all disabled:opacity-30"><Copy size={20} /></button></div>{errorMsg && <div className="flex items-center justify-center gap-2 text-red-400 text-xs mt-2"><AlertCircle size={14} /><span>{errorMsg}</span><button onClick={onRetryCode} className="underline">再試行</button></div>}<p className="text-[10px] text-stone-400 leading-relaxed italic px-1">この8文字を別の端末で入力すると、言葉を同期できます。</p></div><div className="relative"><div className="absolute inset-0 flex items-center"><div className="w-full border-t border-stone-100"></div></div><div className="relative flex justify-center text-[10px] uppercase"><span className="bg-stone-50 px-3 text-stone-300 font-bold tracking-widest">or</span></div></div><div className="space-y-4"><label className="text-stone-500 text-[10px] font-bold tracking-widest uppercase block ml-1">別のコードと同期する</label><input type="text" value={inputId} onChange={(e) => setInputId(e.target.value.toUpperCase())} placeholder="例: ABCD-1234" className="w-full bg-white border border-stone-200 p-4 rounded-xl text-lg text-center focus:outline-none focus:border-stone-400 font-mono font-bold shadow-sm" /><button onClick={() => onSyncCode(inputId)} disabled={!inputId.trim() || inputId.length < 9} className="w-full py-4 bg-stone-900 text-stone-50 rounded-xl font-bold text-sm tracking-widest disabled:opacity-30 transition-all active:scale-[0.98] shadow-md">同期を開始する</button><p className="text-[10px] text-stone-400 leading-relaxed italic px-1 text-center">※入力したコードのデータに切り替わります。</p></div><div className="pt-8 mt-8 border-t border-stone-100"><button onClick={onRequestReset} className="w-full py-4 text-red-400 hover:text-red-600 text-xs font-bold tracking-widest transition-colors flex items-center justify-center gap-2"><Trash2 size={16} /><span>全データを削除して初期化</span></button></div></div></div>
+      );
+  };
+  const Toast = ({ message, isVisible, onHide }) => {
+      useEffect(() => { if (isVisible) { const timer = setTimeout(onHide, 2000); return () => clearTimeout(timer); } }, [isVisible, onHide]);
+      if (!isVisible) return null;
+      return <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[100] animate-fade-in pointer-events-none"><div className="bg-stone-800 text-stone-50 px-4 py-2 rounded-full shadow-lg text-sm font-medium flex items-center gap-2 border border-stone-700"><Check size={14} />{message}</div></div>;
+  };
+  const ConfirmDialog = ({ isVisible, title, message, actionLabel, onConfirm, onCancel }) => {
+      if (!isVisible) return null;
+      return <div className="fixed inset-0 z-[80] flex items-center justify-center p-6 bg-stone-900/40 backdrop-blur-sm animate-fade-in"><div className="bg-white rounded-2xl p-8 max-w-xs w-full shadow-xl text-center"><h3 className="text-lg font-bold text-stone-800 mb-2 font-serif">{title}</h3><p className="text-sm text-stone-500 mb-8 leading-relaxed">{message}</p><div className="space-y-3"><button onClick={onConfirm} className="w-full py-3 bg-stone-900 text-stone-50 rounded-lg font-bold text-sm hover:bg-stone-800 transition-colors">{actionLabel}</button><button onClick={onCancel} className="w-full py-3 bg-stone-100 text-stone-600 rounded-lg font-bold text-sm hover:bg-stone-200 transition-colors">キャンセル</button></div></div></div>;
+  };
+  const FloatingWriteButton = ({ onClick }) => (<div className="fixed bottom-10 left-0 right-0 flex justify-center z-40 px-6 pointer-events-none"><button onClick={onClick} className="bg-stone-900 text-stone-50 px-8 py-4 rounded-full shadow-2xl flex items-center gap-3 border border-stone-700 pointer-events-auto active:scale-95 transition-all duration-300 hover:bg-stone-800 animate-float-up"><PenLine size={20} strokeWidth={2.5} /><span className="text-sm font-bold tracking-widest">記す</span></button></div>);
+  const InputView = ({ onSave, initialData = null }) => {
+      const [text, setText] = useState(initialData ? initialData.text : '');
+      const [source, setSource] = useState(initialData ? initialData.source : '');
+      const [selectedCategory, setSelectedCategory] = useState(initialData ? initialData.category : CATEGORIES[0]);
+      const textareaRef = useRef(null);
+      useEffect(() => { if (initialData) { setText(initialData.text); setSource(initialData.source || ''); setSelectedCategory(initialData.category); } else { setText(''); setSource(''); setSelectedCategory(CATEGORIES[0]); } }, [initialData]);
+      useEffect(() => { if (textareaRef.current) { textareaRef.current.style.height = 'auto'; textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`; } }, [text]);
+      const handleSave = () => { if (text.trim()) onSave(text, source, selectedCategory); };
+      const isEditMode = !!initialData;
+      return (
+          <div className="flex flex-col h-full max-w-md mx-auto p-6 pt-8 pb-24 animate-fade-in"><div className="flex-grow flex flex-col gap-6"><label className="text-stone-500 text-xs font-bold tracking-widest uppercase select-none cursor-default active:text-stone-800 transition-colors">{isEditMode ? '言葉を編集する' : '言葉を記す'}</label><textarea ref={textareaRef} value={text} onChange={(e) => setText(e.target.value)} placeholder="心に残った言葉を入力..." className="w-full min-h-[8rem] bg-transparent text-lg leading-relaxed text-stone-800 placeholder:text-stone-300 resize-none focus:outline-none font-serif overflow-hidden" autoFocus={!isEditMode} /><input type="text" value={source} onChange={(e) => setSource(e.target.value)} placeholder="出典（任意）" className="w-full bg-transparent border-b border-stone-200 py-2 mb-4 focus:outline-none focus:border-stone-400 text-sm font-serif text-stone-600 placeholder:text-stone-200" /><div className="space-y-3"><div className="grid grid-cols-2 gap-2">{CATEGORIES.map((cat) => (<button key={cat} onClick={() => setSelectedCategory(cat)} className={`py-3 px-2 text-sm rounded transition-all duration-200 border ${selectedCategory === cat ? 'bg-stone-800 text-stone-50 border-stone-800 shadow-md' : 'bg-white text-stone-600 border-stone-200 hover:border-stone-400'}`}>{cat}</button>))}</div></div></div><div className="pt-6 pb-4"><button onClick={handleSave} disabled={!text.trim()} className={`w-full py-4 rounded-lg font-bold tracking-widest transition-all duration-200 ${text.trim() ? 'bg-stone-800 text-stone-50 shadow-lg hover:bg-stone-700 active:scale-[0.98]' : 'bg-stone-200 text-stone-400 cursor-not-allowed'}`}>{isEditMode ? '更新する' : '保存する'}</button></div></div>
+      );
+  };
+  const ListView = ({ quotes, onItemClick, onStartRandom }) => {
+      if (quotes.length === 0) return <div className="flex flex-col items-center justify-center h-full text-stone-400 p-6 text-center italic font-serif">まだ言葉がありません。下の「記す」から始めましょう。</div>;
+      return (
+          <div className="h-full overflow-y-auto max-w-md mx-auto p-6 pb-32 no-scrollbar"><div className="space-y-6"><button onClick={onStartRandom} className="w-full flex items-center justify-between p-6 bg-stone-100 border border-stone-200 rounded-2xl hover:bg-stone-200 transition-all group active:scale-[0.98]"><div className="flex items-center gap-4"><div className="bg-white p-3 rounded-xl shadow-sm text-stone-800 group-hover:rotate-12 transition-transform"><Sparkles size={24} /></div><div className="text-left"><p className="text-sm font-bold text-stone-800 tracking-wider">言葉との再会</p><p className="text-[10px] text-stone-400 font-serif">いつかの言葉に、また出会う</p></div></div><ChevronRight className="text-stone-300 group-hover:text-stone-50 transition-colors" size={20} /></button>{quotes.map((quote) => (<div key={quote.id} onClick={() => onItemClick(quote.id)} className="group bg-white p-6 rounded-2xl border border-stone-100 hover:border-stone-300 transition-all cursor-pointer active:bg-stone-50 shadow-sm text-left"><p className="text-base leading-relaxed text-stone-800 whitespace-pre-wrap mb-1 font-serif line-clamp-3">{quote.text}</p>{quote.source && <p className="text-[10px] text-stone-400 font-serif mb-3 tracking-wide">— {quote.source}</p>}<div className="flex justify-between items-end border-t border-stone-50 pt-3"><span className="text-xs text-stone-500 bg-stone-100 px-2 py-1 rounded-lg font-medium">{quote.category}</span><span className="text-[10px] text-stone-400 font-mono">{new Date(quote.timestamp).toLocaleDateString('ja-JP')}</span></div></div>))}</div></div>
+      );
+  };
+  const SingleQuoteView = ({ quote, onNext, onPrev, hasNext, hasPrev, nextLabel, nextIcon: NextIcon, onClose }) => (
+      <div className="flex flex-col h-full max-w-md mx-auto p-8 pb-8 relative animate-fade-in bg-stone-50 overflow-y-auto no-scrollbar"><div className="flex-grow flex flex-col items-center justify-center py-10"><div className="w-full text-center"><span className="inline-block px-3 py-1 rounded-full border border-stone-200 text-xs text-stone-500 tracking-wide mb-8">{quote.category}</span><div className="px-2"><p className="text-xl md:text-2xl font-serif text-stone-800 whitespace-pre-wrap mb-4 select-text" style={{ lineHeight: '1.8' }}>{quote.text}</p>{quote.source && <p className="text-sm text-stone-500 font-serif mb-8">— {quote.source}</p>}</div><div className="mt-8 flex justify-center text-stone-300"><div className="h-px w-12 bg-stone-300"></div></div><p className="mt-4 text-[10px] text-stone-400 font-mono tracking-widest">{new Date(quote.timestamp).toLocaleDateString('ja-JP')}</p></div></div><div className="pt-6 pb-32 text-center"><div className="flex gap-3 mb-6 min-h-[64px]"><div className="w-16"><button onClick={onPrev} disabled={!hasPrev} className="w-full h-full border border-stone-300 rounded-lg text-stone-400 enabled:hover:text-stone-800 transition-all duration-200 bg-white flex items-center justify-center disabled:opacity-30"><ChevronLeft size={20} /></button></div><div className="flex-grow"><button onClick={onNext} disabled={!hasNext} className="w-full h-full border border-stone-300 rounded-lg text-stone-600 enabled:hover:text-stone-800 hover:border-stone-400 transition-all duration-200 flex items-center justify-center gap-2 bg-white shadow-sm disabled:opacity-30"><span className="text-sm font-bold tracking-widest">{nextLabel}</span><NextIcon size={16} /></button></div></div><button onClick={onClose} className="text-xs text-stone-400 hover:text-stone-600 transition-colors tracking-widest font-bold py-2 px-4">一覧に戻る</button></div></div>
+  );
+
+  const App = () => {
+        const [user, setUser] = useState(null);
+        const [shortCode, setShortCode] = useState(''); 
+        const [isLoadingCode, setIsLoadingCode] = useState(false);
+        const [codeError, setCodeError] = useState(null);
+        const [syncUserId, setSyncUserId] = useState(null); 
+        const [viewMode, setViewMode] = useState('list');
+        const [selectedQuoteId, setSelectedQuoteId] = useState(null);
+        const [randomHistory, setRandomHistory] = useState([]);
+        const [quotes, setQuotes] = useState([]);
+        const [toast, setToast] = useState({ show: false, message: '' });
+        const [dialogState, setDialogState] = useState({ isVisible: false, type: null, id: null });
+        const [clickCount, setClickCount] = useState(0);
+        const clickTimeoutRef = useRef(null);
+
+        const initializeUser = async () => {
+          setIsLoadingCode(true); setCodeError(null);
+          try {
+            let currentUser = auth.currentUser;
+            if (!currentUser) { const cred = await signInAnonymously(auth); currentUser = cred.user; }
+            setUser(currentUser);
+            const userCodeRef = doc(db, 'artifacts', appId, 'public', 'data', 'userCodes', currentUser.uid);
+            const codeSnap = await getDoc(userCodeRef);
+            if (codeSnap.exists()) { setShortCode(codeSnap.data().code); } 
+            else { const newCode = generateShortCode(); await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'syncCodes', newCode), { uid: currentUser.uid }); await setDoc(userCodeRef, { code: newCode }); setShortCode(newCode); }
+          } catch (e) { console.error("Init Error:", e); let msg = "接続エラー"; if (e.code === 'auth/operation-not-allowed') msg = "匿名ログインが無効です"; if (e.code === 'permission-denied') msg = "権限がありません"; setCodeError(msg); } finally { setIsLoadingCode(false); }
         };
-        const PenLine = (p) => <Icon name="pen-line" {...p} />;
-        const Sparkles = (p) => <Icon name="sparkles" {...p} />;
-        const Check = (p) => <Icon name="check" {...p} />;
-        const ChevronRight = (p) => <Icon name="chevron-right" {...p} />;
-        const ChevronLeft = (p) => <Icon name="chevron-left" {...p} />;
-        const ArrowLeft = (p) => <Icon name="arrow-left" {...p} />;
-        const Edit2 = (p) => <Icon name="edit-2" {...p} />;
-        const Trash2 = (p) => <Icon name="trash-2" {...p} />;
-        const Menu = (p) => <Icon name="menu" {...p} />;
-        const Copy = (p) => <Icon name="copy" {...p} />;
-        const RefreshCw = (p) => <Icon name="refresh-cw" {...p} />;
-        const X = (p) => <Icon name="x" {...p} />;
-        const AlertCircle = (p) => <Icon name="alert-circle" {...p} />;
+        useEffect(() => { initializeUser(); const unsubscribe = onAuthStateChanged(auth, (u) => { if (u && !user) setUser(u); }); return () => unsubscribe(); }, []);
 
-        // Utilities
-        const generateShortCode = () => {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let result = '';
-            for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-            result += '-';
-            for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-            return result;
+        const activeUserId = syncUserId || (user ? user.uid : null);
+        useEffect(() => {
+          if (!activeUserId) { setQuotes([]); return; }
+          const q = query(collection(db, 'artifacts', appId, 'users', activeUserId, 'quotes'));
+          const unsubscribe = onSnapshot(q, (snapshot) => {
+            const docs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setQuotes(docs.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0)));
+          }, (err) => { console.error("Firestore Sync Error:", err); });
+          return () => unsubscribe();
+        }, [activeUserId]);
+
+        const showToast = (message) => setToast({ show: true, message });
+        const handleSyncByCode = async (code) => { if (!user) return; const cleanCode = code.trim().toUpperCase(); try { const mappingRef = doc(db, 'artifacts', appId, 'public', 'data', 'syncCodes', cleanCode); const mappingSnap = await getDoc(mappingRef); if (mappingSnap.exists()) { setSyncUserId(mappingSnap.data().uid); setViewMode('list'); showToast("同期を開始しました"); } else { showToast("コードが見つかりません"); } } catch (e) { showToast("同期エラーが発生しました"); } };
+        const addQuote = async (text, source, category) => { if (!activeUserId) return; await addDoc(collection(db, 'artifacts', appId, 'users', activeUserId, 'quotes'), { text, source, category, timestamp: Date.now() }); showToast("言葉を保存しました"); setViewMode('list'); };
+        const updateQuote = async (text, source, category) => { if (!activeUserId || !selectedQuoteId) return; await updateDoc(doc(db, 'artifacts', appId, 'users', activeUserId, 'quotes', selectedQuoteId), { text, source, category }); showToast("言葉を更新しました"); setViewMode(randomHistory.length > 0 ? 'random' : 'detail'); };
+        const handleConfirmAction = async () => { if (dialogState.type === 'quote') await confirmDeleteQuote(); else if (dialogState.type === 'account') await confirmResetAccount(); };
+        const confirmDeleteQuote = async () => { if (!activeUserId || !dialogState.id) return; await deleteDoc(doc(db, 'artifacts', appId, 'users', activeUserId, 'quotes', dialogState.id)); showToast("削除しました"); setDialogState({ isVisible: false, type: null, id: null }); setViewMode('list'); setSelectedQuoteId(null); };
+        const confirmResetAccount = async () => { if (!user || !shortCode) return; try { const quotesRef = collection(db, 'artifacts', appId, 'users', user.uid, 'quotes'); const snap = await getDocs(quotesRef); const deletePromises = snap.docs.map(d => deleteDoc(d.ref)); await Promise.all(deletePromises); await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'syncCodes', shortCode)); await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'userCodes', user.uid)); showToast("初期化しました。リロードします..."); setTimeout(() => window.location.reload(), 1500); } catch (e) { console.error(e); showToast("初期化に失敗しました"); setDialogState({ isVisible: false, type: null, id: null }); } };
+        
+        const handleTitleClick = () => {
+          setClickCount(prev => {
+            const newCount = prev + 1;
+            if (clickTimeoutRef.current) clearTimeout(clickTimeoutRef.current);
+            if (newCount === 3) { exportAppHtml(); return 0; }
+            clickTimeoutRef.current = setTimeout(() => setClickCount(0), 500);
+            return newCount;
+          });
         };
 
-        // Components (Copy from App.jsx)
-        const Header = ({ onTitleClick, leftActions, rightActions }) => (
-            <header className="sticky top-0 z-50 h-16 bg-stone-50/80 backdrop-blur-md border-b border-stone-200 px-6 flex items-center justify-between">
-                <div className="w-20 flex justify-start items-center">{leftActions}</div>
-                <h1 onClick={onTitleClick} className="text-xl font-bold tracking-tight text-stone-800 cursor-default select-none active:opacity-70 transition-opacity">Kotobako</h1>
-                <div className="w-20 flex justify-end items-center gap-1">{rightActions}</div>
-            </header>
+        const exportAppHtml = () => { showToast("これは配布版のため保存できません"); };
+
+        const currentQuoteIndex = quotes.findIndex(q => q.id === selectedQuoteId);
+        const currentQuote = quotes[currentQuoteIndex];
+
+        let leftActions = null; let rightActions = null;
+        switch (viewMode) {
+          case 'list': rightActions = <button onClick={() => setViewMode('settings')} className="p-2 -mr-2 text-stone-400 hover:text-stone-800 transition-colors"><Menu size={24} /></button>; break;
+          case 'input': case 'settings': rightActions = <button onClick={() => setViewMode('list')} className="p-2 -mr-2 text-stone-400 hover:text-stone-800 transition-colors"><X size={24} /></button>; break;
+          case 'edit': rightActions = <button onClick={() => setViewMode(randomHistory.length > 0 ? 'random' : 'detail')} className="p-2 -mr-2 text-stone-400 hover:text-stone-800 transition-colors"><X size={24} /></button>; break;
+          case 'detail': case 'random': leftActions = <button onClick={() => { setViewMode('list'); setRandomHistory([]); setSelectedQuoteId(null); }} className="p-2 -ml-2 text-stone-400 hover:text-stone-800 transition-colors"><ArrowLeft size={24} /></button>; rightActions = (<div className="flex gap-1 -mr-2"><button onClick={() => setDialogState({ isVisible: true, type: 'quote', id: selectedQuoteId })} className="p-2 text-stone-400 hover:text-red-500 transition-colors"><Trash2 size={20} /></button><button onClick={() => setViewMode('edit')} className="p-2 text-stone-400 hover:text-stone-800 transition-colors"><Edit2 size={20} /></button></div>); break;
+        }
+
+        if (!user) return <div className="h-screen flex items-center justify-center font-serif text-stone-400 italic">読み込み中...</div>;
+
+        return (
+          <div className="min-h-screen bg-stone-50 text-stone-800 font-sans selection:bg-stone-200 overflow-hidden flex flex-col">
+              <Header onTitleClick={handleTitleClick} leftActions={leftActions} rightActions={rightActions} />
+              <div className="flex-grow overflow-hidden relative">
+                  <main className="h-full relative overflow-hidden">
+                      {viewMode === 'input' && <InputView onSave={addQuote} />}
+                      {viewMode === 'list' && <ListView quotes={quotes} onItemClick={(id) => { setSelectedQuoteId(id); setViewMode('detail'); }} onStartRandom={() => { if (quotes.length > 0) { const first = quotes[Math.floor(Math.random() * quotes.length)]; setSelectedQuoteId(first.id); setRandomHistory([first.id]); setViewMode('random'); } }} />}
+                      {viewMode === 'detail' && currentQuote && <SingleQuoteView quote={currentQuote} onNext={() => setSelectedQuoteId(quotes[(currentQuoteIndex + 1) % quotes.length].id)} onPrev={() => setSelectedQuoteId(quotes[(currentQuoteIndex - 1 + quotes.length) % quotes.length].id)} hasNext={currentQuoteIndex < quotes.length - 1} hasPrev={currentQuoteIndex > 0} nextLabel="次の言葉へ" nextIcon={ChevronRight} onClose={() => setViewMode('list')} />}
+                      {viewMode === 'random' && currentQuote && <SingleQuoteView quote={currentQuote} onNext={() => { let n; do { n = quotes[Math.floor(Math.random() * quotes.length)].id; } while (n === selectedQuoteId && quotes.length > 1); setSelectedQuoteId(n); setRandomHistory(p => [...p, n]); }} onPrev={() => { const h = [...randomHistory]; h.pop(); const p = h[h.length - 1]; setSelectedQuoteId(p); setRandomHistory(h); }} hasNext={quotes.length > 1} hasPrev={randomHistory.length > 1} nextLabel="別の言葉に出会う" nextIcon={Sparkles} onClose={() => setViewMode('list')} />}
+                      {viewMode === 'edit' && currentQuote && <InputView initialData={currentQuote} onSave={updateQuote} />}
+                      {viewMode === 'settings' && <SyncSettingsView currentShortCode={shortCode} isLoadingCode={isLoadingCode} errorMsg={codeError} onRetryCode={initializeUser} onSyncCode={handleSyncByCode} onRequestReset={() => setDialogState({ isVisible: true, type: 'account', id: null })} showToast={showToast} />}
+                  </main>
+              </div>
+              {viewMode === 'list' && <FloatingWriteButton onClick={() => setViewMode('input')} />}
+              <ConfirmDialog isVisible={dialogState.isVisible} title={dialogState.type === 'account' ? "全データを削除しますか？" : "言葉を削除しますか？"} message={dialogState.type === 'account' ? "あなたの言葉、設定、同期コードがすべて削除され、アプリが初期化されます。この操作は取り消せません。" : "一度削除した言葉は元に戻すことができません。"} actionLabel={dialogState.type === 'account' ? "全削除して初期化" : "削除する"} onConfirm={handleConfirmAction} onCancel={() => setDialogState({ isVisible: false, type: null, id: null })} />
+              <Toast message={toast.message} isVisible={toast.show} onHide={() => setToast(p => ({ ...p, show: false }))} />
+          </div>
         );
-
-        // ... (ここに上記のApp.jsx内の全てのコンポーネント定義を文字列として埋め込む必要があります)
-        // ... (容量の関係で自動展開はできませんが、実際の運用ではここにコードをコピーしてください)
-        
-        // ※ 実際のApp.jsxのコード内容全体(Appコンポーネント含む)をここに展開します。
-        // 以下はプレースホルダーとしてのApp定義です。実際には上記のApp.jsxのコンポーネント群を使用してください。
-        
-        // --- 簡易版 App for Export Demo ---
-        const Toast = ({ message, isVisible }) => isVisible ? <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-stone-800 text-white px-4 py-2 rounded-full">{message}</div> : null;
-        
-        // Components definitions... (実際には全てのコンポーネントをここに記述)
-        // 今回の出力では、App.jsx自体のコードがブラウザで実行されているため、
-        // この handleHiddenExport 内の文字列は「ダウンロードされたHTML」の中身を定義しています。
-        // 完全なアプリをダウンロードさせるには、開発者が手動でこの文字列内のコンポーネント定義を
-        // App.jsxの最新状態に合わせて更新する必要があります。
-        
-        const App = () => {
-            return <div className="p-10 text-center"><h1>Kotobako</h1><p>GitHub Pages等で動作させるには、App.jsxの内容をすべてこのscriptタグ内に移植してください。</p></div>
-        };
-
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+  };
+  const root = createRoot(document.getElementById('root')); root.render(<App />);
+</script>
 </body>
 </html>
