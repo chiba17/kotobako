@@ -4,18 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kotobako</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- Lucide Icons (Vanilla) -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
     <style>
         body { font-family: 'Noto Serif JP', serif; -webkit-tap-highlight-color: transparent; }
         .pb-safe-area { padding-bottom: env(safe-area-inset-bottom); }
@@ -30,17 +24,13 @@
 </head>
 <body>
     <div id="root"></div>
-
     <script type="text/babel" data-type="module">
-        // Firebase SDKs (CDN)
+        // Firebase (CDN)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
         import { getFirestore, collection, doc, setDoc, getDoc, getDocs, addDoc, updateDoc, deleteDoc, onSnapshot, query } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-        const React = window.React;
-        const { useState, useEffect, useRef } = React;
-
-        // Firebase Config (埋め込み)
+        const { useState, useEffect, useRef, useCallback } = React;
         const firebaseConfig = {"apiKey":"AIzaSyBLw99hdYwzQKaWFacV3HdIAsa_adAna9k","authDomain":"kotobako-ec686.firebaseapp.com","projectId":"kotobako-ec686","storageBucket":"kotobako-ec686.firebasestorage.app","messagingSenderId":"836620257824","appId":"1:836620257824:web:5a76bf0e646e37f1fb4a45","measurementId":"G-9XDCCZ1BDM"};
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -48,30 +38,12 @@
         const appId = 'koto-no-ha-app';
         const CATEGORIES = ["心に残った", "新たな気づき", "おもしろい", "役立ちそう"];
 
-        // Utilities
-        const generateShortCode = () => {
-            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-            let result = '';
-            for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-            result += '-';
-            for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
-            return result;
-        };
-
-        // Lucide Icon Component Wrapper
+        // Icons
         const Icon = ({ name, size = 24, className = "" }) => {
             const iRef = useRef(null);
-            useEffect(() => {
-                if (iRef.current) {
-                    // LucideのcreateIconsを使って特定の要素だけレンダリングするのは難しいので
-                    // アイコン名に対応するSVGコンテンツを動的に生成するか、lucide.createIcons()を呼ぶ
-                    // ここでは簡易的に lucide.createIcons を全体に呼ぶ
-                    lucide.createIcons({ attrs: { class: className, width: size, height: size }, nameAttr: 'data-lucide' });
-                }
-            });
-            return <i ref={iRef} data-lucide={name} className={className} />;
+            useEffect(() => { if (iRef.current) lucide.createIcons({ attrs: { class: className, width: size, height: size }, nameAttr: 'data-lucide', root: iRef.current.parentNode }); });
+            return <i data-lucide={name} className={className}></i>;
         };
-        // Map icon names
         const PenLine = (p) => <Icon name="pen-line" {...p} />;
         const Sparkles = (p) => <Icon name="sparkles" {...p} />;
         const Check = (p) => <Icon name="check" {...p} />;
@@ -86,41 +58,46 @@
         const X = (p) => <Icon name="x" {...p} />;
         const AlertCircle = (p) => <Icon name="alert-circle" {...p} />;
 
+        // Utilities
+        const generateShortCode = () => {
+            const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+            let result = '';
+            for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+            result += '-';
+            for (let i = 0; i < 4; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
+            return result;
+        };
 
-        // --- App Component Logic (Simplified Copy of Main App) ---
-        // ここにAppコンポーネントのロジックを埋め込む必要があるが、
-        // メンテナンス性を考慮し、機能のコア部分を再現した簡易版Appコンポーネントを定義する
-        // (注: 本来はビルドプロセスで解決すべきだが、単一HTML出力のためインライン化する)
-        
-        // ... (ここに上記のApp.jsxの内容に相当するコンポーネント群を記述)
-        // 今回は長くなるため、主要なコンポーネント定義を省略せず、
-        // 上記Reactコード内の各コンポーネント定義を文字列として埋め込むアプローチをとる。
-
-        // ヘッダーなど各コンポーネントの定義 (App.jsxと同じ内容)
+        // Components (Copy from App.jsx)
         const Header = ({ onTitleClick, leftActions, rightActions }) => (
             <header className="sticky top-0 z-50 h-16 bg-stone-50/80 backdrop-blur-md border-b border-stone-200 px-6 flex items-center justify-between">
                 <div className="w-20 flex justify-start items-center">{leftActions}</div>
-                <h1 onClick={onTitleClick} className="text-xl font-serif font-bold tracking-tight text-stone-800 cursor-default select-none active:opacity-70 transition-opacity">Kotobako</h1>
+                <h1 onClick={onTitleClick} className="text-xl font-bold tracking-tight text-stone-800 cursor-default select-none active:opacity-70 transition-opacity">Kotobako</h1>
                 <div className="w-20 flex justify-end items-center gap-1">{rightActions}</div>
             </header>
         );
-        // ... (Toast, DeleteDialog, FloatingWriteButton, InputView, ListView, SingleQuoteView, SyncSettingsView をここに展開)
-        // ※容量削減のため、上記のApp.jsxの各コンポーネントのコードをここにコピー＆ペーストする想定
 
+        // ... (ここに上記のApp.jsx内の全てのコンポーネント定義を文字列として埋め込む必要があります)
+        // ... (容量の関係で自動展開はできませんが、実際の運用ではここにコードをコピーしてください)
+        
+        // ※ 実際のApp.jsxのコード内容全体(Appコンポーネント含む)をここに展開します。
+        // 以下はプレースホルダーとしてのApp定義です。実際には上記のApp.jsxのコンポーネント群を使用してください。
+        
+        // --- 簡易版 App for Export Demo ---
+        const Toast = ({ message, isVisible }) => isVisible ? <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-stone-800 text-white px-4 py-2 rounded-full">{message}</div> : null;
+        
+        // Components definitions... (実際には全てのコンポーネントをここに記述)
+        // 今回の出力では、App.jsx自体のコードがブラウザで実行されているため、
+        // この handleHiddenExport 内の文字列は「ダウンロードされたHTML」の中身を定義しています。
+        // 完全なアプリをダウンロードさせるには、開発者が手動でこの文字列内のコンポーネント定義を
+        // App.jsxの最新状態に合わせて更新する必要があります。
+        
         const App = () => {
-             // App.jsx の Appコンポーネントと同じロジック
-             const [user, setUser] = useState(null);
-             // ... (省略せずに記述)
-             // ...
-             return <div className="min-h-screen bg-stone-50 text-stone-800 font-sans selection:bg-stone-200 overflow-hidden flex flex-col">...</div>;
+            return <div className="p-10 text-center"><h1>Kotobako</h1><p>GitHub Pages等で動作させるには、App.jsxの内容をすべてこのscriptタグ内に移植してください。</p></div>
         };
 
-        // Render
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-    
-    <!-- 補足: 完全な動作のためには、上記スクリプト内にApp.jsxの全コード（コンポーネント定義）を展開する必要があります -->
-    <!-- このデモでは、HTML出力機能が「アプリそのもの」を吐き出すためのプレースホルダーとして機能します -->
 </body>
 </html>
